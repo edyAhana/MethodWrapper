@@ -5,6 +5,11 @@
 #include <string>
 #include <exception>
 
+class Holder;
+
+template <typename T>
+T holder_cast(const Holder& holder);
+
 class Holder {
 private:
     struct Base {
@@ -30,6 +35,18 @@ private:
 
     uint8_t index;
     std::unique_ptr<Base> value;
+
+    template<typename T>
+    T get_as() const {
+        Derived<T>* arg = dynamic_cast<Derived<T>*>(value.get());
+        if(!arg) {
+            throw std::runtime_error("type of argument is not correct");
+        }
+        return arg->get_value();
+    }
+
+    template<typename U>
+    friend U holder_cast(const Holder& holder);
 public:
     Holder() = delete;
 
@@ -65,19 +82,15 @@ public:
         return *this;
     }
 
-    template<typename T>
-    T get_as() const {
-        Derived<T>* arg = dynamic_cast<Derived<T>*>(value.get());
-        if(!arg) {
-            throw std::runtime_error("type of argument is not correct");
-        }
-        return arg->get_value();
-    }
 
     uint8_t get_index() const {
         return index;
     }
+};
 
+template <typename T>
+T holder_cast(const Holder& holder) {
+    return holder.get_as<T>();
 };
 
 #endif
