@@ -82,6 +82,13 @@ public:
         return *this;
     }
 
+    template<typename U>
+    Holder& operator=(U value) {
+        value.reset(
+            std::make_unique<Derived<U>>(value)
+        );
+        return *this;
+    }
 
     uint8_t get_index() const {
         return index;
@@ -92,5 +99,7 @@ template <typename T>
 T holder_cast(const Holder& holder) {
     return holder.get_as<T>();
 };
+
+
 
 #endif
