@@ -19,14 +19,15 @@
 - Компилятор GCC или Clang  
 - pthread (на Linux)  
 
+```markdown
 ### Инструкция по сборке
 
-git submodule update --init --recursive
-mkdir build
-cd build
-cmake ..
-make
-./run_test
+    git submodule update --init --recursive
+    mkdir build
+    cd build
+    cmake ..
+    make
+    ./run_test
 
 
 
