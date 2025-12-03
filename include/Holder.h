@@ -21,7 +21,6 @@ private:
     struct Derived : Base{
         T value;
         Derived(const T& value): value(value) {}
-        Derived(T&& value): value(std::move(value)) {}
         ~Derived() = default;
 
         Base* get_copy() override {
@@ -33,8 +32,6 @@ private:
         }
     };
 
-    uint8_t index;
-    std::unique_ptr<Base> value;
 
     template<typename T>
     T get_as() const {
@@ -48,28 +45,25 @@ private:
     template<typename U>
     friend U holder_cast(const Holder& holder);
 public:
-    Holder() = delete;
+    std::unique_ptr<Base> value;
+
+    Holder() = default;
 
     template<typename T>
-    Holder(std::string str, const T& value) 
-        : index(str.back())
-        , value(std::make_unique<Derived<T>>(value)) {}
-    
+    Holder(const T& value) 
+        : value(std::make_unique<Derived<T>>(value)) {}
+
     Holder(const Holder& other)
-        : index(other.index)
-        , value(other.value->get_copy()) {}
+        : value(other.value->get_copy()) {}
     
     Holder(Holder&& other)
-        : index(other.index)
-        , value(std::move(other.value)) {}
-
+        : value(std::move(other.value)) {}
 
     Holder& operator=(const Holder& other) {
         if(this == &other) {
             return *this;
         }
         value.reset(other.value->get_copy());
-        index = other.index;
         return *this;
     }
 
@@ -78,20 +72,18 @@ public:
             return *this;
         }
         value = std::move(other.value);
-        index = other.index;
         return *this;
     }
 
     template<typename U>
-    Holder& operator=(U value) {
-        value.reset(
-            std::make_unique<Derived<U>>(value)
-        );
+    Holder& operator=(U new_value) {
+        value.reset();
+        value = std::make_unique
+                <
+                    Derived<std::remove_reference_t<U>>
+                > 
+                (std::forward<U>(new_value));
         return *this;
-    }
-
-    uint8_t get_index() const {
-        return index;
     }
 };
 
